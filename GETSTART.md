@@ -4,6 +4,26 @@
 
 ---
 
+## ═══ BƯỚC 0: BOOTSTRAP (Chỉ cần khi folder hoàn toàn trống) ═══
+
+> **Kiểm tra trước**: Nếu folder hiện tại đã có file `.gitmodules` hoặc thư mục `.agent/` → bỏ qua Bước 0, nhảy thẳng vào Phần A.
+
+Nếu User đang đứng trước một folder trống hoàn toàn và chỉ có URL này, hãy tự chạy:
+
+```bash
+# Bước 0.1 — Khởi tạo git repo
+git init
+git commit --allow-empty -m "chore: init workspace"
+
+# Bước 0.2 — Kéo bộ công cụ về (public, không cần SSH)
+git submodule add https://github.com/leolionart/antigravity-kit.git .agent
+git submodule update --init .agent
+```
+
+Sau khi xong, thư mục `.agent/` sẽ có đầy đủ agents, skills, workflows và file GETSTART.md này. Tiếp tục Phần A để hoàn thiện môi trường làm việc.
+
+---
+
 ## ═══ PHẦN A: CẤU HÌNH BAN ĐẦU (Chỉ chạy một lần) ═══
 
 ---
