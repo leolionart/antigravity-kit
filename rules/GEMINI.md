@@ -172,6 +172,7 @@ When user's prompt is NOT in English:
 | **Vague / Simple**      | Clarification  | Ask Purpose, Users, and Scope                                     |
 | **Full Orchestration**  | Gatekeeper     | **STOP** subagents until user confirms plan details               |
 | **Direct "Proceed"**    | Validation     | **STOP** → Even if answers are given, ask 2 "Edge Case" questions |
+| **Jira/Confluence READ** | Auto-Context  | **SKIP GATE** → Auto-detect project via `issueHistory()` → Execute |
 
 **Protocol:**
 
@@ -179,6 +180,12 @@ When user's prompt is NOT in English:
 2. **Handle Spec-heavy Requests:** When user gives a list (Answers 1, 2, 3...), do NOT skip the gate. Instead, ask about **Trade-offs** or **Edge Cases** (e.g., "LocalStorage confirmed, but should we handle data clearing or versioning?") before starting.
 3. **Wait:** Do NOT invoke subagents or write code until the user clears the Gate.
 4. **Reference:** Full protocol in `@[skills/brainstorming]`.
+
+> 🟢 **EXCEPTION — Jira/Confluence READ operations** (get, list, search, fetch tasks/pages):
+> - **SKIP Socratic Gate hoàn toàn**
+> - Gọi `issue in issueHistory() ORDER BY lastViewed DESC` để detect active project
+> - Execute query ngay với context đã detect — KHÔNG hỏi về project, filter, hay format
+> - Chỉ hỏi sau khi đã có kết quả nếu cần clarify thêm
 
 ### 🏁 Final Checklist Protocol
 

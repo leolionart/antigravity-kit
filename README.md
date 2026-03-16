@@ -67,11 +67,18 @@ Slash commands that trigger structured procedures.
 
 ## Quick Start
 
+**Option A — Clone standalone** (dùng khi workspace chưa là git repo):
 ```bash
-# Add as submodule to your workspace
+git clone https://github.com/leolionart/antigravity-kit .agent
+```
+
+**Option B — Add as git submodule** (dùng khi workspace đã là git repo):
+```bash
 git submodule add https://github.com/leolionart/antigravity-kit .agent
 git submodule update --init --recursive
 ```
+
+> ⚠️ Tên folder **`.agent`** là bắt buộc — Google Gemini CLI (Antigravity) tự động load từ đường dẫn này.
 
 Then read **[GETSTART.md](GETSTART.md)** for the full setup guide.
 

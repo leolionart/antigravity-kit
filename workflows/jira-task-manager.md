@@ -5,6 +5,32 @@ description: Create and manage Jira tasks for the AI project, assign tasks to co
 
 # Jira Workflow — Tạo task và quản lý trên Jira
 
+## 🔍 Auto-Context Detection (LUÔN chạy đầu tiên với READ/FETCH queries)
+
+**Khi user yêu cầu lấy/tìm/list Jira tasks mà KHÔNG nêu rõ project key:**
+
+### Bước 0: Tự động detect project context — KHÔNG hỏi user
+
+1. Gọi `jira_search` với JQL: `issue in issueHistory() ORDER BY lastViewed DESC` và `maxResults=5`
+2. Từ kết quả, đếm project key xuất hiện nhiều nhất → đó là **active project**
+3. **Proceed ngay** với project đó — KHÔNG hỏi "bạn muốn project nào?"
+4. Fallback: Nếu `issueHistory()` rỗng hoặc lỗi → default về **project `AI`**
+
+### Thông tin context mặc định của team:
+- **Default project**: `AI` (project key cố định của team này)
+- **Default board ID**: `168` (board của project AI — confirm lại bằng query nếu cần)
+- **Default sprint**: sprint đang `active` (query để lấy ID thực tế)
+
+### Ví dụ áp dụng:
+| User nói | AI làm |
+|----------|--------|
+| "Lấy tasks chưa có description" | → detect project từ history → query ngay với JQL |
+| "Tasks nào đang In Progress?" | → detect project → filter status = "In Progress" |
+| "Tasks được assign cho tôi" | → detect project → filter assignee = currentUser() |
+
+> ⚠️ **KHÔNG** hỏi lại về project, filter, hay format nếu user đã nêu ý định rõ ràng.
+> Chạy query trước, sau đó hỏi nếu kết quả cần clarify thêm.
+
 ## Khi tạo task mới cho một sprint, bạn cần thực hiện đầy đủ các bước sau:
 
 ### Bước 1: Tạo Jira issue
