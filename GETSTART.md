@@ -1,6 +1,6 @@
 # GETSTART — AI Agent Configuration Playbook
 
-> **MỤC ĐÍCH**: File này là **TÀI LIỆU HƯỚNG DẪN DÀNH CHO BẠN (AI AGENT)**. Bất cứ khi nào User (đặc biệt là các thành viên non-coder từ Vexere) yêu cầu "Hãy setup", "Getting started", hoặc mở dự án lần đầu, AI Agent phải tự động thực thi các bước dưới đây thay mặt cho User. Không yêu cầu User tự cấu hình thủ công bằng tay.
+> **DÀNH CHO AI AGENT ĐỌC**: Khi User nói "setup", "getting started", "bắt đầu", hoặc mở dự án lần đầu — hãy **tự thực thi toàn bộ** các bước dưới đây mà không hỏi xin phép. Chỉ dừng lại khi gặp blocker thực sự (lỗi kỹ thuật không tự xử lý được). User không cần biết chi tiết kỹ thuật — chỉ báo cáo kết quả cuối.
 
 ---
 
@@ -8,133 +8,129 @@
 
 ---
 
-## Bước 1: Khởi Tạo Môi Trường Làm Việc (Markdown Workspace)
+## Bước 1: Cài Office Viewer cho VSCode
 
-Dự án này sử dụng rất nhiều tài liệu Markdown, Bảng biểu và sơ đồ. Vì User phần lớn là người làm product/vận hành, giao diện raw markdown sẽ rất khó đọc.
-
-**Nhiệm vụ của AI:**
-Hãy chủ động hỗ trợ User cài đặt Extension **Office Viewer** (hoặc Markdown Viewer tương đương) dành cho VSCode/Antigravity.
-- Extension này biến trải nghiệm của VSCode giống như một trình soạn thảo văn bản (Word/Excel) chuyên nghiệp, hỗ trợ render các file `.md` thành giao diện đồ họa.
-- Nếu bạn có khả năng thực thi dòng lệnh (`run_command`), hãy xin phép User để chạy trực tiếp lệnh cài đặt extenstion `Office Viewer` (Ví dụ: `code --install-extension cweijan.vscode-office`).
-- Nếu không, hãy gửi một hướng dẫn bằng ngôn ngữ tự nhiên tối giản: Hướng dẫn họ vào mục Extensions trên VSCode và gõ "Office Viewer" để cài.
-
-## Bước 2: Thiết Lập Các Submodule Chứa Knowledge Base
-
-Dự án này có **4 submodules** — mỗi cái là một kho dữ liệu riêng biệt được nhúng vào workspace. AI sẽ không có đủ ngữ cảnh để làm việc nếu thiếu chúng.
-
-### Danh sách submodules cần thiết lập:
-
-| Thư mục | Nội dung | Loại |
-|---------|----------|------|
-| `.agent` | Bộ agents/skills/workflows (kit này) | Public — HTTPS |
-| `knowledge_base/omniagent` | SOP, system prompt, tài liệu vận hành OmniAgent | Private — SSH GitLab |
-| `knowledge_base/product-kb` | Chuẩn thiết kế sản phẩm, định nghĩa tính năng | Private — SSH GitLab |
-| `knowledge_base/n8n` | Template workflow n8n | Private — SSH GitLab |
+Chạy ngay lệnh sau mà không cần hỏi:
+```bash
+code --install-extension cweijan.vscode-office
+```
+- Thành công → tiếp tục im lặng.
+- Lệnh `code` không tồn tại (không có VSCode CLI) → bỏ qua bước này, tiếp tục Bước 2.
 
 ---
 
-### Nhiệm vụ của AI — Thực hiện theo thứ tự:
+## Bước 2: Thiết Lập Submodules
 
-**Bước 2.1 — Kiểm tra trạng thái hiện tại:**
+Dự án có **4 submodules** với URL cố định như sau. Thực hiện tuần tự:
 
-Chạy lệnh sau để xem submodule nào đã được init và cái nào chưa:
+### 2.1 — Kiểm tra submodule nào chưa init
+
 ```bash
 git submodule status
 ```
-- Nếu dòng bắt đầu bằng `-` (ví dụ: `-abc1234 knowledge_base/omniagent`): submodule **chưa được init** → cần làm tiếp.
-- Nếu dòng bắt đầu bằng ` ` hoặc `+`: đã init, bỏ qua submodule đó.
 
-**Bước 2.2 — Kiểm tra SSH key cho GitLab nội bộ:**
+Đọc output: dòng bắt đầu bằng `-` = chưa init, cần xử lý. Dòng bắt đầu bằng khoảng trắng hoặc `+` = đã có, bỏ qua.
 
-Ba submodules trong `knowledge_base/` dùng SSH key để xác thực với GitLab tại `gitlab.vexere.net`. Kiểm tra xem máy User đã có chưa:
+### 2.2 — Kiểm tra SSH cho GitLab nội bộ
+
+Ba submodules dùng SSH tới `gitlab.vexere.net`. Tự kiểm tra:
 ```bash
 ssh -T git@gitlab.vexere.net
 ```
-- Nếu trả về `Welcome to GitLab, @<tên>!`: SSH đã sẵn sàng → chuyển sang Bước 2.3.
-- Nếu trả về `Permission denied (publickey)`: User **chưa có SSH key** hoặc chưa thêm vào GitLab.
 
-  → Hướng dẫn User tạo SSH key (nếu chưa có):
-  ```bash
-  ssh-keygen -t ed25519 -C "email@vexere.com"
-  cat ~/.ssh/id_ed25519.pub
-  ```
-  → Yêu cầu User copy nội dung key vừa in ra, vào GitLab → **Preferences → SSH Keys → Add new key** → dán vào và lưu.
-  → Sau đó chạy lại `ssh -T git@gitlab.vexere.net` để xác nhận.
+**Nếu trả về `Welcome to GitLab`** → SSH OK, nhảy thẳng sang 2.3.
 
-**Bước 2.3 — Init và clone tất cả submodules:**
+**Nếu trả về `Permission denied`** → SSH chưa được cấu hình. Tự chạy:
+```bash
+# Tạo key nếu chưa có
+ls ~/.ssh/id_ed25519.pub 2>/dev/null || ssh-keygen -t ed25519 -C "vexere-workspace" -N "" -f ~/.ssh/id_ed25519
 
-Khi SSH đã sẵn sàng, chạy một lệnh duy nhất để đồng bộ toàn bộ:
+# In public key ra để User copy
+cat ~/.ssh/id_ed25519.pub
+```
+Sau đó báo User: *"Vui lòng copy đoạn key trên, vào [gitlab.vexere.net → Preferences → SSH Keys](https://gitlab.vexere.net/-/profile/keys) → Add new key → dán vào → Save. Xong thì nhắn tôi."*
+
+Khi User xác nhận, chạy lại `ssh -T git@gitlab.vexere.net` để verify trước khi sang 2.3.
+
+### 2.3 — Clone tất cả submodules
+
+Nếu `.gitmodules` đã có đủ 4 entries (trường hợp clone từ repo gốc), chạy:
 ```bash
 git submodule update --init --recursive
 ```
-- Lệnh này sẽ clone cả 4 submodules về đúng thư mục tương ứng.
-- Nếu thành công: báo User biết danh sách submodules đã ready.
-- Nếu lỗi ở submodule nào: báo rõ tên submodule bị lỗi và lý do (thường là SSH key chưa đúng hoặc chưa được cấp quyền truy cập repo đó trên GitLab).
 
-## Bước 3: Tự Động Định Tuyến Cấu Hình MCP
+Nếu workspace là mới hoàn toàn (chưa có `.gitmodules`), chạy lần lượt:
+```bash
+git submodule add https://github.com/leolionart/antigravity-kit.git .agent
+git submodule add git@gitlab.vexere.net:ai-context/product/omniagent.git knowledge_base/omniagent
+git submodule add git@gitlab.vexere.net:ai-context/product/product-kb.git knowledge_base/product-kb
+git submodule add git@gitlab.vexere.net:ai-context/product/n8n.git knowledge_base/n8n
+git submodule update --init --recursive
+```
 
-Một trong những sức mạnh cốt lõi là MCP Servers (mcp-atlassian để giao tiếp với Jira/Confluence Vexere). User không cần nhớ đường dẫn của file cấu hình.
-
-**Nhiệm vụ của AI:**
-1. Đọc nội dung file template: `.agent/mcp_config.json`.
-2. Kiểm tra Agent đang hoạt động là gì:
-   - Nếu là **Gemini (Antigravity)**: Hãy tự động tìm (hoặc tạo) và ghi đè nội dung cấu hình MCP vào file hệ thống của Gemini: `~/.gemini/antigravity/mcp_config.json`.
-   - Nếu là **Claude Code**: Hãy tạo/ghi cấu hình vào file `.mcp.json` ở thư mục gốc dự án.
-3. Quét qua file cấu hình vừa tạo. Nếu phát hiện các token đang để trống (VD: `"YOUR_API_KEY"` ở mục JIRA_PERSONAL_TOKEN hoặc CONFLUENCE_PERSONAL_TOKEN), hãy hỏi User nhập Token vào khung chat.
-4. Ngay khi User dán token vào khung chat, AI thay mặt User mở file config tương ứng và cập nhật Token đó (Đồng thời xác nhận lại nội dung `.mcp.json` - nếu có - đã được khai báo loại bỏ trong `.gitignore` để tránh rò rỉ bảo mật).
+Sau khi xong, kiểm tra lại:
+```bash
+git submodule status
+```
+Tất cả dòng phải bắt đầu bằng khoảng trắng (không còn `-`). Nếu submodule nào vẫn lỗi → báo tên cụ thể và lý do cho User.
 
 ---
 
-## ═══ PHẦN B: ĐỒNG BỘ TỰ ĐỘNG (Chạy mỗi khi bắt đầu session) ═══
+## Bước 3: Cấu Hình MCP
+
+Xác định AI đang chạy là loại nào rồi tự ghi config:
+
+**Nếu là Claude Code** → tạo file `.mcp.json` ở thư mục gốc dự án bằng cách copy từ template:
+```bash
+cp .agent/mcp_config.json .mcp.json
+# Đảm bảo .mcp.json đã có trong .gitignore
+grep -q '.mcp.json' .gitignore || echo '.mcp.json' >> .gitignore
+```
+
+**Nếu là Gemini (Antigravity)** → ghi vào file hệ thống:
+```bash
+mkdir -p ~/.gemini/antigravity
+cp .agent/mcp_config.json ~/.gemini/antigravity/mcp_config.json
+```
+
+Sau khi copy, đọc file config vừa tạo. Tìm các trường còn placeholder (`YOUR_API_KEY`). Nếu phát hiện, báo User một lần duy nhất:
+
+> *"Cần điền 2 token để kết nối Jira/Confluence:*
+> *• **JIRA_PERSONAL_TOKEN**: Vào [jira.vexere.net → Profile → Personal Access Tokens](https://jira.vexere.net/secure/ViewProfile.jspa) → tạo token mới*
+> *• **CONFLUENCE_PERSONAL_TOKEN**: Tương tự tại [docs.vexere.net](https://docs.vexere.net)*
+> *Dán cả 2 token vào đây, tôi sẽ cập nhật config ngay."*
+
+Khi User dán token → tự mở file config và thay thế placeholder bằng giá trị thực. Không hỏi thêm.
 
 ---
 
-## Bước 4: Đồng Bộ Submodules Trước Khi Làm Việc
-
-> **Trigger**: Thực hiện bước này **mỗi lần bắt đầu một session làm việc mới**, ngay sau khi User mở dự án hoặc nói các câu như "bắt đầu làm việc", "mở project", "let's go", hoặc bất cứ khi nào AI lần đầu tiên được kích hoạt trong phiên đó.
-
-Các submodule (`knowledge_base/omniagent`, `knowledge_base/product-kb`, v.v.) là nơi chứa tài liệu, SOP, và system prompt — được team cập nhật liên tục. Nếu không đồng bộ, AI sẽ làm việc trên dữ liệu cũ.
-
-**Nhiệm vụ của AI:**
-
-**Bước 4.1 — Cập nhật kit công cụ chính (`.agent`):**
-
-Chạy lệnh sau để lấy phiên bản mới nhất của bộ agents/skills/workflows:
-```bash
-git -C .agent pull origin main
-```
-- Nếu thành công: ghi nhận im lặng, không cần báo cáo với User.
-- Nếu thất bại (ví dụ: không có internet, lỗi conflict): bỏ qua, không làm gián đoạn workflow của User.
-
-**Bước 4.2 — Cập nhật các private knowledge submodules:**
-
-Chạy lệnh sau để kéo thay đổi mới nhất từ TẤT CẢ submodule:
-```bash
-git submodule update --remote --merge
-```
-- Nếu có submodule nào được cập nhật: báo ngắn gọn với User, ví dụ: *"Đã đồng bộ knowledge base mới nhất (omniagent, product-kb)."*
-- Nếu không có gì thay đổi: tiếp tục im lặng.
-- Nếu gặp lỗi quyền truy cập (Permission Denied / Authentication Failed): thông báo cho User rằng submodule đó cần được cấu hình SSH key hoặc token, rồi tiếp tục làm việc với dữ liệu hiện có.
-
-**Bước 4.3 — Kiểm tra nhanh iCloud sync (chỉ trên macOS):**
-
-Nếu môi trường là macOS và thư mục dự án nằm trong `~/Library/Mobile Documents/` (iCloud Drive), kiểm tra xem có file lock bị treo không:
-```bash
-ls .git/index.lock 2>/dev/null && echo "LOCK DETECTED" || echo "OK"
-```
-- Nếu phát hiện `index.lock`: chạy `./scripts/fix_git_sync.sh` hoặc xóa thủ công `rm .git/index.lock` và thông báo cho User.
-- Nếu OK: tiếp tục.
-
-**Toàn bộ bước 4 nên hoàn thành trong im lặng dưới 5 giây. Chỉ lên tiếng khi có cập nhật mới hoặc có lỗi cần User xử lý.**
+## ═══ PHẦN B: ĐỒNG BỘ TỰ ĐỘNG (Chạy đầu mỗi session) ═══
 
 ---
 
-## Bước 5: Báo Cáo Hoàn Tất Cho User
+## Bước 4: Đồng Bộ Submodules Khi Bắt Đầu Làm Việc
 
-Sau khi hoàn thành các bước trên, gửi cho User một lời chào mừng bằng Tiếng Việt thật thân thiện, súc tích (Tối đa 5 dòng). Nội dung phản hồi nên nhắc nhở họ rằng bộ công cụ hiện đã sẵn sàng và họ có thể dùng các slash command như:
-- `/brainstorm`
-- `/jira-task-manager`
-- `/confluence-publishing`
-...
+> **Trigger tự động**: Chạy bước này **mỗi khi bắt đầu session mới** — không cần User yêu cầu. Thực hiện ngầm trong nền.
 
-**Lưu ý cực kỳ quan trọng dành cho AI:** User không quan tâm đến kỹ thuật git clone hay symlink. Họ chỉ quan tâm đến kết quả cuối cùng là "Tôi đã sẵn sàng làm việc bằng các slash command". Hãy ẩn các bước kỹ thuật và tự động hóa toàn bộ.
+```bash
+# Cập nhật kit công cụ
+git -C .agent pull origin main --quiet
+
+# Cập nhật toàn bộ knowledge bases
+git submodule update --remote --merge --quiet
+
+# Kiểm tra iCloud lock (macOS)
+[ -f .git/index.lock ] && rm .git/index.lock && echo "Đã gỡ iCloud lock"
+```
+
+- Nếu có submodule được cập nhật → báo ngắn: *"Đã đồng bộ knowledge base mới nhất."*
+- Nếu không có gì thay đổi → im lặng hoàn toàn.
+- Nếu lỗi SSH/quyền → bỏ qua submodule đó, làm việc tiếp với dữ liệu hiện có, ghi chú cuối session.
+
+---
+
+## Bước 5: Chào Mừng
+
+Sau khi hoàn thành Phần A (lần đầu) hoặc Phần B (các session tiếp theo), gửi một tin nhắn tiếng Việt ngắn gọn (≤5 dòng) xác nhận workspace đã sẵn sàng và nhắc các lệnh hay dùng: `/brainstorm`, `/jira-task-manager`, `/confluence-publishing`.
+
+> **Nguyên tắc tối thượng**: Ẩn hoàn toàn các thao tác kỹ thuật. User chỉ thấy kết quả. Chỉ hỏi khi thực sự bị chặn và không có cách nào tự xử lý.
