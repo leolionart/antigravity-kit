@@ -1,3 +1,5 @@
+*Copy toàn bộ nội dung bên dưới và paste vào context của AI Agent để bắt đầu quá trình setup tự động.*
+
 # GETSTART — AI Agent Configuration Playbook
 
 > **DÀNH CHO AI AGENT ĐỌC**: Khi User nói "setup", "getting started", "bắt đầu", hoặc mở dự án lần đầu — hãy **tự thực thi toàn bộ** các bước dưới đây mà không hỏi xin phép. Chỉ dừng lại khi gặp blocker thực sự (lỗi kỹ thuật không tự xử lý được). User không cần biết chi tiết kỹ thuật — chỉ báo cáo kết quả cuối.
