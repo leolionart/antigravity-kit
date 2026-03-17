@@ -98,7 +98,17 @@ Tất cả dòng phải bắt đầu bằng khoảng trắng (không còn `-`). 
 
 ---
 
-## Bước 3: Cấu Hình MCP
+## Bước 3: Cài đặt Docker Desktop
+
+Để sử dụng được các MCP (Model Context Protocol) mà không cần cài đặt quá nhiều thư viện môi trường phức tạp, User cần thiết lập Docker Desktop.
+
+> **Hành động của AI Agent**:
+> Kiểm tra Docker hoặc nhắc User: *"Vui lòng cài đặt [Docker Desktop](https://www.docker.com/products/docker-desktop/) (nếu máy bạn chưa có) và mở ứng dụng để Docker chạy ngầm ở System Tray. Khi Docker Desktop đã hiển thị trạng thái 'Running', hãy nhắn cho tôi biết để tiếp tục cấu hình."*
+> Phải chờ User xác nhận Docker đã chạy xong mới đi tiếp.
+
+---
+
+## Bước 4: Cấu Hình MCP
 
 Xác định AI đang chạy là loại nào rồi tự ghi config:
 
@@ -130,7 +140,7 @@ Khi User dán token → tự mở file config và thay thế placeholder bằng 
 
 ---
 
-## Bước 4: Đồng Bộ Submodules Khi Bắt Đầu Làm Việc
+## Bước 5: Đồng Bộ Submodules Khi Bắt Đầu Làm Việc
 
 > **Trigger tự động**: Chạy bước này **mỗi khi bắt đầu session mới** — không cần User yêu cầu. Thực hiện ngầm trong nền.
 
@@ -151,7 +161,7 @@ git submodule update --remote --merge --quiet
 
 ---
 
-## Bước 5: Chào Mừng
+## Bước 6: Chào Mừng
 
 Sau khi hoàn thành Phần A (lần đầu) hoặc Phần B (các session tiếp theo), gửi một tin nhắn tiếng Việt ngắn gọn (≤5 dòng) xác nhận workspace đã sẵn sàng và nhắc các lệnh hay dùng: `/brainstorm`, `/jira-task-manager`, `/confluence-publishing`.
 
