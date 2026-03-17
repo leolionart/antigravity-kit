@@ -1,33 +1,13 @@
 {
     "mcpServers": {
-        "context7": {
-            "command": "npx",
+        "MCP_DOCKER": {
+            "command": "docker",
             "args": [
-                "-y",
-                "@upstash/context7-mcp",
-                "--api-key",
-                "YOUR_API_KEY"
-            ]
-        },
-        "shadcn": {
-            "command": "npx",
-            "args": [
-                "shadcn@latest",
-                "mcp"
-            ]
-        },
-        "mcp-atlassian": {
-            "type": "stdio",
-            "command": "mcp-atlassian",
-            "args": [],
-            "disabled": false,
-            "env": {
-                "CONFLUENCE_URL": "https://docs.vexere.net",
-                "CONFLUENCE_PERSONAL_TOKEN": "YOUR_API_KEY", // Vào profile -> Personal Access Tokens -> Create
-                "JIRA_URL": "https://jira.vexere.net",
-                "JIRA_PERSONAL_TOKEN": "YOUR_API_KEY" // Vào profile -> Personal Access Tokens -> Create
-            }
+                "mcp",
+                "gateway",
+                "run"
+            ],
+            "type": "stdio"
         }
     }
 }
-// setup mcp server in  ~/.gemini\antigravity\mcp_config.json
