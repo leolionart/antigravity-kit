@@ -23,7 +23,9 @@ changelog: Added wiki format decision tree and bullet list rendering fix
 - Applies to every Codex CLI agent before invoking `mcp__MCP_DOCKER__confluence_update_page` or `mcp__MCP_DOCKER__confluence_create_page`.
 
 ## Execution Mode
-- **Bắt buộc chạy trong sub-agent** (Task tool với `subagent_type: confluence-agent`) theo AGENTS.md Section 4. Confluence API response rất nặng và sẽ làm đầy context window của luồng chat chính.
+- **Bắt buộc chạy trong sub-agent** theo AGENTS.md Section 4 vì Confluence API response rất nặng và sẽ làm đầy context window của luồng chat chính.
+- **Ưu tiên** `subagent_type: confluence-agent`.
+- **Fallback chính thức**: nếu runtime không nhận diện `confluence-agent`, delegate sang `subagent_type: general-purpose` và nhúng operator instructions từ `.claude/agents/confluence-agent.md` vào prompt để giữ nguyên format decision tree, conversion rules, và post-publish checks.
 - **Ngoại lệ**: Chỉ được gọi MCP trực tiếp khi thao tác đơn lẻ (đọc 1 page hoặc update 1 field). Khi flow bao gồm prepare + convert + publish + post-publish → bắt buộc delegate.
 
 ## Prerequisites
