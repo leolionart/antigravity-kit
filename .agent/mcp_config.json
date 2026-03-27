@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+        "mcp-atlassian": {
+            "type": "stdio",
+            "command": "mcp-atlassian",
+            "args": [],
+            "disabled": false,
+            "env": {
+                "CONFLUENCE_URL": "https://docs.vexere.net",
+                "CONFLUENCE_PERSONAL_TOKEN": "YOUR_API_KEY", // Vào profile -> Personal Access Tokens -> Create
+                "JIRA_URL": "https://jira.vexere.net",
+                "JIRA_PERSONAL_TOKEN": "YOUR_API_KEY" // Vào profile -> Personal Access Tokens -> Create
+            }
+        }
+    }
+}
+// setup mcp server in  ~/.gemini\antigravity\mcp_config.json
