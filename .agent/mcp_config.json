@@ -1,17 +1,38 @@
 {
     "mcpServers": {
         "mcp-atlassian": {
-            "type": "stdio",
-            "command": "mcp-atlassian",
-            "args": [],
-            "disabled": false,
+            "command": "npx",
+            "args": [
+                "-y",
+                "-p",
+                "jsdom",
+                "-p",
+                "mcp-atlassian",
+                "mcp-atlassian"
+            ],
+            "disabled": true,
             "env": {
                 "CONFLUENCE_URL": "https://docs.vexere.net",
-                "CONFLUENCE_PERSONAL_TOKEN": "YOUR_API_KEY", // Vào profile -> Personal Access Tokens -> Create
+                "CONFLUENCE_PERSONAL_TOKEN": "YOUR_API_KEY",
                 "JIRA_URL": "https://jira.vexere.net",
-                "JIRA_PERSONAL_TOKEN": "YOUR_API_KEY" // Vào profile -> Personal Access Tokens -> Create
+                "JIRA_PERSONAL_TOKEN": "YOUR_API_KEY"
+            }
+        },
+        "HubSpotDev": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "-p",
+                "@hubspot/cli",
+                "hs",
+                "mcp",
+                "start",
+                "--ai-agent",
+                "gemini"
+            ],
+            "env": {
+                "HUBSPOT_MCP_STANDALONE": "true"
             }
         }
     }
 }
-// setup mcp server in  ~/.gemini\antigravity\mcp_config.json

@@ -100,27 +100,4 @@ Agents activate through **semantic matching** — the AI reads your request and 
 ```
 
 ---
-
-## Philosophy
-
-This kit is built for **workflow thinkers, not coders**.
-
-- No code review, no test runners, no deployment scripts
-- Focus: planning, documenting, researching, communicating
-- Generic enough to reuse across projects and teams
-- Private context (SOPs, product knowledge) lives in your own submodules
-
-**Public** = this repo (generic capabilities)
-**Private** = your `knowledge_base/` submodules (company/project-specific content)
-
----
-
-## Contributing
-
-Improvements should work for **any AI assistant and any team**, not just one tool or one company.
-
-- Add agents for uncovered workflow domains
-- Add skills for new knowledge areas
-- Keep code-specific content out of this repo
-
-Issues and PRs: [github.com/leolionart/antigravity-kit](https://github.com/leolionart/antigravity-kit)
+Một lưu ý ngớ ngẫn là file mcp_config.json không được chứa bất kỳ notes nào nếu không sẽ bị lỗi không nhận cấu hình ngay

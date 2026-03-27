@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+USAGE = """Usage: .agent/.shared/atlassian-mcp <tool-name> [args]
+
+Proxy to the MCP Atlassian server defined in .agent/mcp_config.json.
+
+Examples:
+  .agent/.shared/atlassian-mcp jira_search jql='project = AI' limit=5 --output json
+  .agent/.shared/atlassian-mcp confluence_get_page page_id=193248579 --output json
+"""
+
+
+def repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def config_path() -> Path:
+    return repo_root() / ".agent" / "mcp_config.json"
+
+
+def load_server() -> tuple[str, list[str], dict[str, str]]:
+    cfg = json.loads(config_path().read_text(encoding="utf-8"))
+    server = cfg["mcpServers"]["mcp-atlassian"]
+    command = str(server["command"])
+    args = [str(item) for item in server.get("args", [])]
+
+    raw_env = server.get("env") or {}
+    env = {}
+    for key, value in raw_env.items():
+        if key in os.environ and os.environ[key]:
+            env[key] = os.environ[key]
+        else:
+            env[key] = str(value)
+    return command, args, env
+
+
+def normalize_tool_name(name: str) -> str:
+    return name.replace("-", "_")
+
+
+def parse_args(argv: list[str]) -> tuple[str, dict[str, object], str]:
+    if not argv or argv[0] in {"-h", "--help"}:
+        print(USAGE)
+        raise SystemExit(0 if argv else 1)
+
+    tool_name = normalize_tool_name(argv[0])
+    output_mode = "text"
+    payload: dict[str, object] = {}
+    i = 1
+
+    while i < len(argv):
+        token = argv[i]
+        if token in {"-h", "--help"}:
+            print(USAGE)
+            raise SystemExit(0)
+        if token == "--output":
+            if i + 1 >= len(argv):
+                raise SystemExit("Missing value for --output")
+            output_mode = argv[i + 1]
+            i += 2
+            continue
+        if token.startswith("--output="):
+            output_mode = token.split("=", 1)[1]
+            i += 1
+            continue
+        if token == "--raw":
+            if i + 1 >= len(argv):
+                raise SystemExit("Missing value for --raw")
+            raw = json.loads(argv[i + 1])
+            if not isinstance(raw, dict):
+                raise SystemExit("--raw must be a JSON object")
+            payload.update(raw)
+            i += 2
+            continue
+        if token.startswith("--raw="):
+            raw = json.loads(token.split("=", 1)[1])
+            if not isinstance(raw, dict):
+                raise SystemExit("--raw must be a JSON object")
+            payload.update(raw)
+            i += 1
+            continue
+        if token.startswith("--"):
+            key = token[2:].replace("-", "_")
+            if "=" in key:
+                key, value = key.split("=", 1)
+                payload[key] = value
+                i += 1
+                continue
+            if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                value = argv[i + 1]
+                lowered = value.lower()
+                if lowered == "true":
+                    payload[key] = True
+                elif lowered == "false":
+                    payload[key] = False
+                else:
+                    payload[key] = value
+                i += 2
+                continue
+            payload[key] = True
+            i += 1
+            continue
+        if "=" in token:
+            key, value = token.split("=", 1)
+            payload[key.replace("-", "_")] = value
+            i += 1
+            continue
+        raise SystemExit(f"Unexpected positional argument: {token}")
+
+    return tool_name, payload, output_mode
+
+
+def main() -> int:
+    if not config_path().is_file():
+        raise SystemExit(f"Missing MCP config: {config_path()}")
+
+    command, command_args, env_items = load_server()
+    tool_name, payload, output_mode = parse_args(sys.argv[1:])
+
+    cmd = [
+        "npx",
+        "-y",
+        "mcporter",
+        "call",
+        "--stdio",
+        command,
+    ]
+    for arg in command_args:
+        cmd.extend(["--stdio-arg", arg])
+    for key, value in env_items.items():
+        cmd.extend(["--env", f"{key}={value}"])
+    cmd.extend(
+        [
+            "--cwd",
+            str(repo_root()),
+            tool_name,
+            "--args",
+            json.dumps(payload, ensure_ascii=False),
+            "--output",
+            output_mode,
+        ]
+    )
+
+    compact_json = output_mode == "json" and os.environ.get("ATLASSIAN_CLI_COMPACT_JSON", "1") != "0"
+    if compact_json:
+        completed = subprocess.run(cmd, capture_output=True, text=True)
+        if completed.stdout:
+            text = completed.stdout.strip()
+            try:
+                obj = json.loads(text)
+            except Exception:
+                sys.stdout.write(completed.stdout)
+            else:
+                sys.stdout.write(json.dumps(obj, ensure_ascii=False, separators=(",", ":")))
+                sys.stdout.write("\n")
+        if completed.stderr:
+            sys.stderr.write(completed.stderr)
+        return completed.returncode
+
+    completed = subprocess.run(cmd)
+    return completed.returncode
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
