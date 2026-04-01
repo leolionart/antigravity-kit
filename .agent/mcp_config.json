@@ -17,22 +17,6 @@
                 "JIRA_URL": "https://jira.vexere.net",
                 "JIRA_PERSONAL_TOKEN": "YOUR_API_KEY"
             }
-        },
-        "HubSpotDev": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "-p",
-                "@hubspot/cli",
-                "hs",
-                "mcp",
-                "start",
-                "--ai-agent",
-                "gemini"
-            ],
-            "env": {
-                "HUBSPOT_MCP_STANDALONE": "true"
-            }
         }
     }
 }
